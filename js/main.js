@@ -40,12 +40,16 @@ const searchInputEl = searchWrapEl.querySelector('input');
 const searchDelayEls = [...searchWrapEl.querySelectorAll('li')] // 배열로 변환
 
 searchStarterEl.addEventListener('click', showSearch)
-searchCloserEl.addEventListener('click', hideSearch)
+searchCloserEl.addEventListener('click', function(event){
+    event.stopPropagation();
+    hideSearch();
+});
 searchshadowEl.addEventListener('click', hideSearch)
 
 function showSearch(){
     headerEl.classList.add('searching');
-    document.documentElement.classList.add('fixed'); //검색 시 스크롤고정
+    //document.documentElement.classList.add('fixed'); //검색 시 스크롤고정
+    stopScroll()
     //console.log(headerMenuEls.reverse()) //배열을 리버스로 출력
     headerMenuEls.reverse().forEach(function(el, index){ //자동으로 순차적 애니메이션 줄려고 함
         el.style.transitionDelay = index * .4 / headerMenuEls.length + 's' // 0.4초로 li개수만큼
@@ -59,7 +63,8 @@ function showSearch(){
 }
 function hideSearch(){
     headerEl.classList.remove('searching');
-    document.documentElement.classList.remove('fixed'); //검색 시 스크롤고정
+    //document.documentElement.classList.remove('fixed'); //검색 시 스크롤고정
+    playScroll()
     headerMenuEls.reverse().forEach(function(el, index){ // 순차적 애니메이션 거꾸로
         el.style.transitionDelay = index * .4 / headerMenuEls.length + 's' 
     });
@@ -69,6 +74,80 @@ function hideSearch(){
     searchDelayEls.reverse();
     searchInputEl.value = '';
 }
+
+function playScroll(){
+    document.documentElement.classList.remove('fixed');
+};
+function stopScroll(){
+    document.documentElement.classList.add('fixed');
+};
+
+
+//헤더 모바일 메뉴 토글
+const menuStarterEl = document.querySelector('header .menu-starter');
+menuStarterEl.addEventListener('click', function(){
+    if(headerEl.classList.contains('menuing')){
+        headerEl.classList.remove('menuing')
+        searchInputEl.value = '';
+        playScroll()
+    }else{
+        headerEl.classList.add('menuing')
+        stopScroll()
+    }
+    
+});
+
+
+//헤더 검색
+const searchTextFieldEl = document.querySelector('header .textfield');
+const searchCancelEl = document.querySelector('header .search-canceler')
+
+searchTextFieldEl.addEventListener('click', function(){
+    headerEl.classList.add('searching--mobile')
+    searchInputEl.focus()
+});
+searchCancelEl.addEventListener('click', function(){
+    headerEl.classList.remove('searching--mobile')
+});
+
+
+//헤더 검색바 오류 리사이징
+window.addEventListener('resize', function(){
+    if(window.innerWidth <= 740){
+        headerEl.classList.remove('searching');
+    }else{
+        headerEl.classList.remove('searching--mobile');
+    }
+});
+
+
+//네비게이션
+const navEl = document.querySelector('nav');
+const navMenuToggleEl = navEl.querySelector('nav .menu-toggler');
+const navMenuShadowEl = navEl.querySelector('.shadow');
+
+navMenuToggleEl.addEventListener('click', function(){
+    if(navEl.classList.contains('menuing')){
+        hideNavMenu();
+    }else{
+        showNavMenu();
+    }
+});
+
+//네비게이션 객체 외에 배경에 클릭 했을 시
+navEl.addEventListener('click', function(event){
+    event.stopPropagation();
+
+});
+navMenuShadowEl.addEventListener('click', hideNavMenu);
+window.addEventListener('click', hideNavMenu);
+
+function showNavMenu(){
+    navEl.classList.add('menuing');
+};
+function hideNavMenu(){
+    navEl.classList.remove('menuing');
+};
 
 
 //요소의 가시성 관찰
@@ -153,6 +232,7 @@ navigations.forEach(function(nav){
     mapEl.innerHTML = /* html */`
         <h3>
             <span class="text">${nav.title}</span>
+            <span class="icon">+</span>
         </h3>
         <ul>
             ${mapList}
@@ -164,3 +244,14 @@ navigations.forEach(function(nav){
 
 const thisYear = document.querySelector('.this-year');
 thisYear.textContent = new Date().getFullYear();
+
+
+
+//푸터 네비 아코디언
+const mapEls = document.querySelectorAll('footer .navigations .map');
+mapEls.forEach(function(el){
+    const h3El = el.querySelector('h3');
+    h3El.addEventListener('click', function(){
+        el.classList.toggle('active');
+    });
+});
